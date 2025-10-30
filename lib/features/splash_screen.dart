@@ -3,6 +3,7 @@ import 'package:auto_route/auto_route.dart';
 import 'package:blogspace/core/routes/router.gr.dart';
 import 'package:blogspace/core/services/sl_service.dart';
 import 'package:blogspace/core/services/token_storage_service.dart';
+import 'package:blogspace/features/onboarding/services/onboarding_service.dart';
 import 'package:flutter/material.dart';
 import 'package:gap/gap.dart';
 import 'package:iconsax_flutter/iconsax_flutter.dart';
@@ -24,9 +25,13 @@ class _SplashScreenState extends State<SplashScreen> {
       await Future.delayed(const Duration(seconds: 4));
       final tokenService = $sl<TokenStorageService>();
       final hasTokens = await tokenService.hasTokens();
-
+      final onboardingPassed = await $sl<OnboardingStorageService>()
+          .isOnboardingPassed();
       if (!mounted) return;
-
+      if (!onboardingPassed) {
+        context.router.replace(OnboardingRoute());
+        return;
+      }
       if (hasTokens) {
         context.router.replace(const ProtectedWrapperRoute());
       } else {
