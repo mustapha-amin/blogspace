@@ -1,3 +1,5 @@
+import 'dart:developer';
+
 import 'package:blogspace/core/routes/router.dart';
 import 'package:blogspace/core/routes/router.gr.dart';
 import 'package:blogspace/core/services/sl_service.dart';
@@ -23,13 +25,22 @@ class AuthInterceptor extends Interceptor {
       options.headers['Authorization'] = 'Bearer $token';
     }
 
-    print('➡️ [REQUEST] ${options.method} ${options.uri}');
+    log('➡️ [REQUEST] ${options.method} ${options.uri}');
     handler.next(options);
   }
 
   @override
+  void onResponse(Response response, ResponseInterceptorHandler handler) {
+    log(
+      "✅ [RESPONSE] ${response.statusCode} ${response.requestOptions.uri} ${response.data.toString().substring(0, 10)}",
+    );
+  }
+
+  @override
   void onError(DioException err, ErrorInterceptorHandler handler) async {
-    print('❌ [ERROR] ${err.response?.statusCode} ${err.requestOptions.uri}');
+    log(
+      '❌ [ERROR] ${err.response?.statusCode} ${err.requestOptions.uri} ${err.response!.data.toString()}',
+    );
 
     if (err.response?.statusCode == 401 && !_isRefreshing) {
       _isRefreshing = true;

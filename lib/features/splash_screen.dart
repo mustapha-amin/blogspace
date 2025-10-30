@@ -22,7 +22,7 @@ class _SplashScreenState extends State<SplashScreen> {
     super.initState();
 
     Future.microtask(() async {
-      await Future.delayed(const Duration(seconds: 4));
+      await Future.delayed(const Duration(seconds: 3));
       final tokenService = $sl<TokenStorageService>();
       final hasTokens = await tokenService.hasTokens();
       final onboardingPassed = await $sl<OnboardingStorageService>()
@@ -55,7 +55,9 @@ class _SplashScreenState extends State<SplashScreen> {
                 color: Colors.black,
                 borderRadius: BorderRadius.circular(12),
               ),
-              child: Center(child: Icon(Iconsax.note, size: 50)),
+              child: Center(
+                child: Icon(Iconsax.note, size: 50, color: Colors.white),
+              ),
             ),
             Gap(12),
             Text(

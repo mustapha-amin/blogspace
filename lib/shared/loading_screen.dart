@@ -11,7 +11,7 @@ class LoadingScreen extends StatelessWidget {
       appBar: AppBar(forceMaterialTransparency: true),
       body: Center(
         child: SpinKitWaveSpinner(
-          color: ShadTheme.of(context).destructiveAlertTheme.iconColor!,
+          color: ShadTheme.of(context).primaryButtonTheme.backgroundColor!,
           size: 80,
         ),
       ),
