@@ -18,10 +18,13 @@ class AuthNotifier extends Notifier<AsyncValue<AuthResponse?>> {
     return AsyncValue.data(null);
   }
 
-  void login(String email, String password) async {
+  void login({required String email, required String password}) async {
     try {
       state = AsyncValue.loading();
-      final response = await authService.login(email, password);
+      final response = await authService.login(
+        email: email,
+        password: password,
+      );
 
       state = AsyncValue.data(response);
       await $sl.get<TokenStorageService>().saveTokens(
@@ -33,19 +36,24 @@ class AuthNotifier extends Notifier<AsyncValue<AuthResponse?>> {
     }
   }
 
-  void register(String email, String password, String username) async {
+  void register({
+    required String email,
+    required String password,
+    required String username,
+  }) async {
     try {
       state = AsyncValue.loading();
-      final response = await authService.register(email, password, username);
-      if (response!.error == null) {
-        state = AsyncValue.data(response);
-        await $sl.get<TokenStorageService>().saveTokens(
-          accessToken: response.tokens!['access'],
-          refreshToken: response.tokens!['refresh'],
-        );
-      } else {
-        state = AsyncValue.error(response.error!, StackTrace.current);
-      }
+      final response = await authService.register(
+        email: email,
+        password: password,
+        username: username,
+      );
+
+      state = AsyncValue.data(response);
+      await $sl.get<TokenStorageService>().saveTokens(
+        accessToken: response!.tokens!['access'],
+        refreshToken: response.tokens!['refresh'],
+      );
     } catch (e, stk) {
       state = AsyncValue.error("An unknown error occured", stk);
     }

@@ -13,9 +13,9 @@ class AppRouter extends RootStackRouter {
       page: ProtectedWrapperRoute.page,
       guards: [AuthGuard()],
       children: [
+        AutoRoute(page: BlogsRoute.page, initial: true),
         AutoRoute(page: BlogCreationRoute.page),
         AutoRoute(page: BlogDetailRoute.page),
-        AutoRoute(page: BlogsRoute.page),
         AutoRoute(page: ProfileRoute.page),
       ],
     ),

@@ -1,5 +1,9 @@
+import 'dart:developer';
+
 import 'package:auto_route/auto_route.dart';
 import 'package:blogspace/core/routes/router.gr.dart';
+import 'package:blogspace/core/services/sl_service.dart';
+import 'package:blogspace/core/services/token_storage_service.dart';
 import 'package:blogspace/features/auth/controllers/auth_controller.dart';
 import 'package:blogspace/features/auth/controllers/login_controller.dart';
 import 'package:blogspace/features/auth/models/auth_response.dart';
@@ -26,6 +30,7 @@ class _AuthScreenState extends ConsumerState<AuthScreen> {
   final _emailController = TextEditingController();
   final _passwordController = TextEditingController();
   bool passwordIsObscure = true;
+  AutovalidateMode autovalidateMode = AutovalidateMode.disabled;
 
   String? _validateUsername(String value) {
     if (value.isEmpty) {
@@ -75,14 +80,19 @@ class _AuthScreenState extends ConsumerState<AuthScreen> {
     return null;
   }
 
-  void _handleSubmit() {
-    if (_formKey.currentState!.saveAndValidate()) {
+  void _handleSubmit() async {
+    // log((await $sl.get<TokenStorageService>().hasTokens()).toString());
+    // return;
+    if (_formKey.currentState!.validate()) {
       if (ref.read(isLoginProvider)) {
         print('Login with: ${_emailController.text}');
         // Call your login function here
         ref
             .read(authNotifierProvider.notifier)
-            .login(_emailController.text, _passwordController.text);
+            .login(
+              email: _emailController.text,
+              password: _passwordController.text,
+            );
       } else {
         print(
           'Sign up with: ${_usernameController.text}, ${_emailController.text}',
@@ -90,11 +100,15 @@ class _AuthScreenState extends ConsumerState<AuthScreen> {
         ref
             .read(authNotifierProvider.notifier)
             .register(
-              _emailController.text,
-              _passwordController.text,
-              _usernameController.text,
+              email: _emailController.text,
+              password: _passwordController.text,
+              username: _usernameController.text,
             );
       }
+    } else {
+      setState(() {
+        autovalidateMode = AutovalidateMode.onUserInteraction;
+      });
     }
   }
 
@@ -102,10 +116,14 @@ class _AuthScreenState extends ConsumerState<AuthScreen> {
   Widget build(BuildContext context) {
     ref.listen(authNotifierProvider, (_, next) {
       if (next.hasError) {
-        showCustomFlushbar(context, message: next.error.toString(), isError: true);
+        showCustomFlushbar(
+          context,
+          message: next.error.toString(),
+          isError: true,
+        );
+        ref.invalidate(authNotifierProvider);
         return;
-      }
-      if (next is AsyncData<AuthResponse>) {
+      } else {
         context.router.replaceAll([BlogsRoute()]);
         return;
       }
