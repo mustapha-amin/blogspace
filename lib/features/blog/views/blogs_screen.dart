@@ -77,7 +77,7 @@ class BlogsScreen extends ConsumerWidget {
                     return BlogPostCard(
                       post: post,
                       onTap: () {
-                        // TODO: Navigate to blog detail screen with post
+                        context.router.push(BlogDetailRoute(post: post));
                       },
                     );
                   },
