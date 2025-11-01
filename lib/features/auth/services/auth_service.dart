@@ -10,7 +10,10 @@ import 'package:dio/dio.dart';
 class AuthService {
   final Dio _dio = $sl.get<Dio>();
 
-  Future<AuthResponse?> login({required String email, required String password}) async {
+  Future<AuthResponse?> login({
+    required String email,
+    required String password,
+  }) async {
     try {
       final response = await _dio.post(
         Endpoints.login,
@@ -34,8 +37,8 @@ class AuthService {
 
   Future<AuthResponse?> register({
     required String email,
-   required String username,
-   required String password,
+    required String username,
+    required String password,
   }) async {
     try {
       final response = await _dio.post(
@@ -59,7 +62,7 @@ class AuthService {
   }
 
   Future<bool> refreshTokens() async {
-    final refreshToken = $sl.get<TokenStorageService>().getRefreshToken();
+    final refreshToken = await $sl.get<TokenStorageService>().getRefreshToken();
     try {
       final response = await _dio.post(
         Endpoints.refresh,

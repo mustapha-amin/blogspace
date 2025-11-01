@@ -1,4 +1,5 @@
 import 'package:auto_route/auto_route.dart';
+import 'package:blogspace/core/routes/router.gr.dart';
 import 'package:blogspace/features/blog/models/blog_response.dart';
 import 'package:blogspace/features/blog/notifiers/blog_notifer.dart';
 import 'package:blogspace/features/blog/widgets/blog_post_card.dart';
@@ -37,14 +38,6 @@ class BlogsScreen extends ConsumerWidget {
             ),
           ],
         ),
-        actions: [
-          IconButton(
-            icon: const Icon(Icons.add),
-            onPressed: () {
-              // TODO: Navigate to blog creation screen
-            },
-          ),
-        ],
       ),
       body: ref
           .watch(blogNotifierProvider)
@@ -103,6 +96,12 @@ class BlogsScreen extends ConsumerWidget {
               ),
             ),
           ),
+      floatingActionButton: FloatingActionButton(
+        onPressed: () {
+          context.router.push(BlogCreationRoute());
+        },
+        child: Icon(Iconsax.note_add),
+      ),
     );
   }
 }

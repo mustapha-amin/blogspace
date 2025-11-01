@@ -24,7 +24,7 @@ class MyApp extends StatelessWidget {
         child: ShadApp.router(
           routerConfig: router.config(),
           theme: ShadThemeData(
-            colorScheme: ShadBlueColorScheme.light(),
+            colorScheme: ShadStoneColorScheme.light(),
             textTheme: ShadTextTheme.fromGoogleFont(GoogleFonts.poppins),
           ),
         ),
