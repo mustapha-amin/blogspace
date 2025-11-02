@@ -4,8 +4,8 @@ import 'package:auto_route/auto_route.dart';
 import 'package:blogspace/core/routes/router.gr.dart';
 import 'package:blogspace/core/services/sl_service.dart';
 import 'package:blogspace/core/services/token_storage_service.dart';
-import 'package:blogspace/features/auth/controllers/auth_controller.dart';
-import 'package:blogspace/features/auth/controllers/login_controller.dart';
+import 'package:blogspace/features/auth/notifers/auth_controller.dart';
+import 'package:blogspace/features/auth/notifers/login_controller.dart';
 import 'package:blogspace/features/auth/models/auth_response.dart';
 import 'package:blogspace/features/auth/widgets/toggle_buttons.dart';
 import 'package:blogspace/shared/app_flushbar.dart';
@@ -123,7 +123,8 @@ class _AuthScreenState extends ConsumerState<AuthScreen> {
         );
         ref.invalidate(authNotifierProvider);
         return;
-      } else {
+      }
+      if (next.value != null) {
         context.router.replaceAll([BlogsRoute()]);
         return;
       }

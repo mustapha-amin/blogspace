@@ -3,52 +3,58 @@ import 'dart:convert';
 import 'package:blogspace/features/profile/models/user.dart';
 
 class BlogPost {
-  final String id;
-  final User user;
-  final String title;
-  final String content;
-  final DateTime createdAt;
-  final DateTime updatedAt;
+  final String? id;
+  final User? user;
+  final String? title;
+  final String? content;
+  final DateTime? createdAt;
+  final DateTime? updatedAt;
 
   BlogPost({
-    required this.id,
-    required this.user,
-    required this.title,
-    required this.content,
-    required this.createdAt,
-    required this.updatedAt,
+    this.id,
+    this.user,
+    this.title,
+    this.content,
+    this.createdAt,
+    this.updatedAt,
   });
 
-  factory BlogPost.fromMap(Map<String, dynamic> map) {
-    final content = map['content'] as String;
-    // Extract first line as title if not provided
-    final firstLineBreak = content.indexOf('\n');
-    final title =
-        map['title'] as String? ??
-        (firstLineBreak > 0
-            ? content.substring(0, firstLineBreak).trim()
-            : content.length > 50
+  factory BlogPost.fromMap(Map<String, dynamic>? map) {
+
+    final content = map!['content'] as String?;
+    final firstLineBreak = content?.indexOf('\n') ?? -1;
+
+    final autoTitle = (content != null && firstLineBreak > 0)
+        ? content.substring(0, firstLineBreak).trim()
+        : (content != null && content.length > 50)
             ? '${content.substring(0, 47)}...'
-            : content);
+            : content;
 
     return BlogPost(
-      id: map['id'] as String,
-      user: User.fromMap(map['user'] as Map<String, dynamic>),
-      title: title,
+      id: map['id'] as String?,
+      user: map['user'] != null ? User.fromMap(map['user']) : null,
+      title: map['title'] as String? ?? autoTitle,
       content: content,
-      createdAt: DateTime.parse(map['createdAt'] as String),
-      updatedAt: DateTime.parse(map['updatedAt'] as String),
+      createdAt: _parseDate(map['createdAt']),
+      updatedAt: _parseDate(map['updatedAt']),
     );
+  }
+
+  static DateTime? _parseDate(dynamic value) {
+    if (value is String && value.isNotEmpty) {
+      return DateTime.tryParse(value);
+    }
+    return null;
   }
 
   Map<String, dynamic> toMap() {
     return <String, dynamic>{
       'id': id,
-      'user': user.toMap(),
+      'user': user?.toMap(),
       'title': title,
       'content': content,
-      'createdAt': createdAt.toIso8601String(),
-      'updatedAt': updatedAt.toIso8601String(),
+      'createdAt': createdAt?.toIso8601String(),
+      'updatedAt': updatedAt?.toIso8601String(),
     };
   }
 
@@ -97,8 +103,4 @@ class BlogPost {
         updatedAt.hashCode;
   }
 
-  String toJson() => json.encode(toMap());
-
-  factory BlogPost.fromJson(String source) =>
-      BlogPost.fromMap(json.decode(source) as Map<String, dynamic>);
 }

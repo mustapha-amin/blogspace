@@ -8,12 +8,29 @@ class LoadingScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(forceMaterialTransparency: true),
+      appBar: AppBar(
+        forceMaterialTransparency: true,
+        foregroundColor: Colors.white,
+      ),
       body: Center(
         child: SpinKitWaveSpinner(
           color: ShadTheme.of(context).primaryButtonTheme.backgroundColor!,
           size: 80,
         ),
+      ),
+    );
+  }
+}
+
+class LoadingWidget extends StatelessWidget {
+  const LoadingWidget({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    return Center(
+      child: SpinKitWaveSpinner(
+        color: ShadTheme.of(context).primaryButtonTheme.backgroundColor!,
+        size: 80,
       ),
     );
   }

@@ -2,7 +2,9 @@ import 'package:auto_route/annotations.dart';
 import 'package:blogspace/features/blog/models/blog_post.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:gap/gap.dart';
 import 'package:intl/intl.dart';
+import 'package:timeago/timeago.dart' as timeago;
 
 @RoutePage()
 class BlogDetailScreen extends ConsumerStatefulWidget {
@@ -74,7 +76,7 @@ class _BlogDetailScreenState extends ConsumerState<BlogDetailScreen> {
               opacity: _showFloatingTitle ? 1.0 : 0.0,
               duration: const Duration(milliseconds: 200),
               child: Text(
-                post.title,
+                post.title!,
                 maxLines: 1,
                 overflow: TextOverflow.ellipsis,
               ),
@@ -104,14 +106,14 @@ class _BlogDetailScreenState extends ConsumerState<BlogDetailScreen> {
                 children: [
                   // Title
                   Text(
-                    post.title,
+                    post.title!,
                     style: theme.textTheme.headlineMedium?.copyWith(
                       fontWeight: FontWeight.bold,
                       height: 1.3,
                     ),
                   ),
 
-                  const SizedBox(height: 20),
+                Gap(20),
 
                   // Author info
                   Row(
@@ -120,8 +122,8 @@ class _BlogDetailScreenState extends ConsumerState<BlogDetailScreen> {
                         radius: 24,
                         backgroundColor: theme.colorScheme.primaryContainer,
                         child: Text(
-                          post.user.username.isNotEmpty
-                              ? post.user.username[0].toUpperCase()
+                          post.user!.username!.isNotEmpty
+                              ? post.user!.username![0].toUpperCase()
                               : '?',
                           style: TextStyle(
                             color: theme.colorScheme.onPrimaryContainer,
@@ -136,16 +138,16 @@ class _BlogDetailScreenState extends ConsumerState<BlogDetailScreen> {
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
                             Text(
-                              post.user.username,
+                              post.user!.username!,
                               style: theme.textTheme.titleMedium?.copyWith(
                                 fontWeight: FontWeight.w600,
                               ),
                             ),
-                            const SizedBox(height: 2),
+                          Gap(2),
                             Row(
                               children: [
                                 Text(
-                                  _formatDate(post.createdAt),
+                                  timeago.format(post.createdAt!),
                                   style: theme.textTheme.bodySmall?.copyWith(
                                     color: theme.colorScheme.onSurface
                                         .withOpacity(0.6),
@@ -189,16 +191,16 @@ class _BlogDetailScreenState extends ConsumerState<BlogDetailScreen> {
                     ],
                   ),
 
-                  const SizedBox(height: 32),
+                Gap(32),
 
                   // Divider
                   Divider(color: theme.colorScheme.outlineVariant),
 
-                  const SizedBox(height: 24),
+                Gap(24),
 
                   // Content
                   SelectableText(
-                    post.content,
+                    post.content!,
                     style: theme.textTheme.bodyLarge?.copyWith(
                       height: 1.8,
                       fontSize: 17,
@@ -206,11 +208,11 @@ class _BlogDetailScreenState extends ConsumerState<BlogDetailScreen> {
                     ),
                   ),
 
-                  const SizedBox(height: 48),
+                Gap(48),
 
                   Divider(color: theme.colorScheme.outlineVariant),
 
-                  const SizedBox(height: 24),
+                Gap(24),
 
                   // Comments section
                   Text(
@@ -220,7 +222,7 @@ class _BlogDetailScreenState extends ConsumerState<BlogDetailScreen> {
                     ),
                   ),
 
-                  const SizedBox(height: 16),
+                Gap(16),
 
                   // Empty state for comments
                   Container(
@@ -237,7 +239,7 @@ class _BlogDetailScreenState extends ConsumerState<BlogDetailScreen> {
                             size: 48,
                             color: theme.colorScheme.onSurface.withOpacity(0.3),
                           ),
-                          const SizedBox(height: 12),
+                        Gap(12),
                           Text(
                             'No comments yet',
                             style: theme.textTheme.titleMedium?.copyWith(
@@ -246,7 +248,7 @@ class _BlogDetailScreenState extends ConsumerState<BlogDetailScreen> {
                               ),
                             ),
                           ),
-                          const SizedBox(height: 4),
+                        Gap(4),
                           Text(
                             'Be the first to share your thoughts',
                             style: theme.textTheme.bodyMedium?.copyWith(
@@ -260,7 +262,7 @@ class _BlogDetailScreenState extends ConsumerState<BlogDetailScreen> {
                     ),
                   ),
 
-                  const SizedBox(height: 24),
+                Gap(24),
 
                   // Comment input field
                   Row(

@@ -1,39 +1,46 @@
-// ignore_for_file: public_member_api_docs, sort_constructors_first
 import 'dart:convert';
 
+// ignore_for_file: public_member_api_docs, sort_constructors_first
 class User {
-  final String id;
-  final String username;
+  final String? id;
+  final String? email;
+  final String? username;
+  final DateTime? createdAt;
+  final DateTime? updatedAt;
+  final String? role;
 
-  const User({required this.id, required this.username});
-
-  User copyWith({String? id, String? username}) {
-    return User(id: id ?? this.id, username: username ?? this.username);
-  }
+  User({
+    required this.id,
+    required this.email,
+    required this.username,
+    required this.createdAt,
+    required this.updatedAt,
+    required this.role,
+  });
 
   Map<String, dynamic> toMap() {
-    return <String, dynamic>{'id': id, 'username': username};
+    return <String, dynamic>{
+      '_id': id,
+      'email': email,
+      'username': username,
+      'createdAt': createdAt?.millisecondsSinceEpoch,
+      'updatedAt': updatedAt?.millisecondsSinceEpoch,
+      'role': role,
+    };
   }
 
   factory User.fromMap(Map<String, dynamic> map) {
-    return User(id: map['id'] as String, username: map['username'] as String);
+    return User(
+      id: map['_id'] != null ? map['_id'] as String : null,
+      email: map['email'] != null ? map['email'] as String : null,
+      username: map['username'] != null ? map['username'] as String : null,
+      createdAt: map['createdAt'] != null
+          ? DateTime.parse(map['createdAt'])
+          : null,
+      updatedAt: map['updatedAt'] != null
+          ? DateTime.parse(map['updatedAt'])
+          : null,
+      role: map['role'] != null ? map['role'] as String : null,
+    );
   }
-
-  String toJson() => json.encode(toMap());
-
-  factory User.fromJson(String source) =>
-      User.fromMap(json.decode(source) as Map<String, dynamic>);
-
-  @override
-  String toString() => 'User(id: $id, username: $username)';
-
-  @override
-  bool operator ==(covariant User other) {
-    if (identical(this, other)) return true;
-
-    return other.id == id && other.username == username;
-  }
-
-  @override
-  int get hashCode => id.hashCode ^ username.hashCode;
 }

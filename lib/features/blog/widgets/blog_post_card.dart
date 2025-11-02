@@ -30,7 +30,7 @@ class BlogPostCard extends StatelessWidget {
                 children: [
                   Expanded(
                     child: Text(
-                      post.title,
+                      post.title!,
                       style: theme.textTheme.titleLarge?.copyWith(
                         fontWeight: FontWeight.bold,
                       ),
@@ -40,9 +40,9 @@ class BlogPostCard extends StatelessWidget {
                   ),
                   const SizedBox(width: 8),
                   Tooltip(
-                    message: DateFormat.yMMMd().add_jm().format(post.createdAt),
+                    message: DateFormat.yMMMd().format(post.createdAt!),
                     child: Text(
-                      timeago.format(post.createdAt),
+                      timeago.format(post.createdAt!),
                       style: theme.textTheme.bodySmall?.copyWith(
                         color: theme.textTheme.bodySmall?.color?.withOpacity(
                           0.7,
@@ -56,7 +56,7 @@ class BlogPostCard extends StatelessWidget {
 
               // Content preview
               Text(
-                post.content,
+                post.content!,
                 style: theme.textTheme.bodyMedium,
                 maxLines: 3,
                 overflow: TextOverflow.ellipsis,
@@ -69,12 +69,12 @@ class BlogPostCard extends StatelessWidget {
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
                   Text(
-                    'By: ${post.user.username}',
+                    'By: ${post.user!.username}',
                     style: theme.textTheme.bodySmall,
                   ),
                   if (post.updatedAt != post.createdAt)
                     Text(
-                      'Edited ${timeago.format(post.updatedAt)}',
+                      'Edited ${timeago.format(post.updatedAt!)}',
                       style: theme.textTheme.bodySmall?.copyWith(
                         fontStyle: FontStyle.italic,
                       ),

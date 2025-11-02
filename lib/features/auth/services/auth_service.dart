@@ -43,6 +43,7 @@ class AuthService {
     try {
       final response = await _dio.post(
         Endpoints.register,
+        
         data: {"email": email, "password": password, "username": username},
       );
       final data = response.data as Map<String, dynamic>;

@@ -1,4 +1,4 @@
-import 'package:blogspace/features/auth/controllers/login_controller.dart';
+import 'package:blogspace/features/auth/notifers/login_controller.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_riverpod/legacy.dart';

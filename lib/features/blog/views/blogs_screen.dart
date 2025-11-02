@@ -6,6 +6,7 @@ import 'package:blogspace/features/blog/widgets/blog_post_card.dart';
 import 'package:blogspace/shared/loading_screen.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:gap/gap.dart';
 import 'package:iconsax_flutter/iconsax_flutter.dart';
 
 @RoutePage()
@@ -14,8 +15,19 @@ class BlogsScreen extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    final blogsAsync =  ref
+          .watch(blogNotifierProvider);
     return Scaffold(
       appBar: AppBar(
+        actions: [
+          IconButton(
+            onPressed: () {
+              context.router.push(ProfileRoute());
+            },
+            icon: Icon(Iconsax.profile_circle, size: 30),
+          ),
+          Gap(5),
+        ],
         scrolledUnderElevation: 0,
         title: Row(
           spacing: 8,
@@ -39,8 +51,7 @@ class BlogsScreen extends ConsumerWidget {
           ],
         ),
       ),
-      body: ref
-          .watch(blogNotifierProvider)
+      body:blogsAsync
           .when(
             data: (blogResponse) {
               if (blogResponse.error != null) {
@@ -66,8 +77,8 @@ class BlogsScreen extends ConsumerWidget {
               }
 
               return RefreshIndicator(
-                onRefresh: () {
-                  return ref.read(blogNotifierProvider.notifier).refresh();
+                onRefresh: () async{
+                  ref.invalidate(blogNotifierProvider);
                 },
                 child: ListView.builder(
                   itemCount: posts.length,

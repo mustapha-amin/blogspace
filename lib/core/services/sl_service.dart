@@ -5,6 +5,7 @@ import 'package:blogspace/core/services/token_storage_service.dart';
 import 'package:blogspace/features/auth/services/auth_service.dart';
 import 'package:blogspace/features/blog/services/blog_service.dart';
 import 'package:blogspace/features/onboarding/services/onboarding_service.dart';
+import 'package:blogspace/features/profile/service/profile_service.dart';
 import 'package:dio/dio.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:get_it/get_it.dart';
@@ -26,12 +27,8 @@ Future<void> setupServices() async {
       final dio = Dio(
         BaseOptions(
           baseUrl: Endpoints.baseUrl,
-          connectTimeout: const Duration(
-            seconds: 5,
-          ), 
-          receiveTimeout: const Duration(
-            seconds: 10,
-          ), 
+          connectTimeout: const Duration(seconds: 5),
+          receiveTimeout: const Duration(seconds: 10),
           sendTimeout: const Duration(seconds: 5),
         ),
       );
@@ -42,5 +39,6 @@ Future<void> setupServices() async {
     })
     ..registerSingleton<AppRouter>(AppRouter())
     ..registerSingleton<AuthService>(AuthService())
-    ..registerSingleton(BlogService());
+    ..registerSingleton(BlogService())
+    ..registerLazySingleton<ProfileService>(() => ProfileService());
 }

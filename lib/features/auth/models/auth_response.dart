@@ -28,8 +28,4 @@ class AuthResponse {
       error: map['error'] != null ? map['error'] as String : null,
     );
   }
-
-  String toJson() => json.encode(toMap());
-
-  factory AuthResponse.fromJson(String source) => AuthResponse.fromMap(json.decode(source) as Map<String, dynamic>);
 }
