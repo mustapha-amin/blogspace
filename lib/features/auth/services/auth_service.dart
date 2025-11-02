@@ -43,7 +43,7 @@ class AuthService {
     try {
       final response = await _dio.post(
         Endpoints.register,
-        
+
         data: {"email": email, "password": password, "username": username},
       );
       final data = response.data as Map<String, dynamic>;
@@ -80,5 +80,23 @@ class AuthService {
     }
   }
 
-  Future<AuthResponse?> logout() async {}
+  Future<void> logout() async {
+    try {
+      final refreshToken = await $sl
+          .get<TokenStorageService>()
+          .getRefreshToken();
+      await _dio.post(Endpoints.refresh, data: {'refresh': refreshToken});
+    } on DioException catch (e) {
+      if (e.response?.data != null) {
+        final response = AuthResponse.fromMap(
+          e.response!.data as Map<String, dynamic>,
+        );
+        throw response.error!;
+      } else {
+        throw handleDioException(e);
+      }
+    } catch (e) {
+      throw UnexpectedException().toString();
+    }
+  }
 }

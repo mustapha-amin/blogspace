@@ -1,5 +1,7 @@
 import 'dart:async';
 
+import 'package:blogspace/core/routes/router.dart';
+import 'package:blogspace/core/routes/router.gr.dart';
 import 'package:blogspace/core/services/sl_service.dart';
 import 'package:blogspace/core/services/token_storage_service.dart';
 import 'package:blogspace/features/auth/models/auth_response.dart';
@@ -26,11 +28,12 @@ class AuthNotifier extends Notifier<AsyncValue<AuthResponse?>> {
         password: password,
       );
 
-      state = AsyncValue.data(response);
       await $sl.get<TokenStorageService>().saveTokens(
         accessToken: response!.tokens!['access'],
         refreshToken: response.tokens!['refresh'],
       );
+      state = AsyncValue.data(response);
+      $sl.get<AppRouter>().replaceAll([BlogsRoute()]);
     } catch (e, stk) {
       state = AsyncValue.error(e, stk);
     }
@@ -49,11 +52,23 @@ class AuthNotifier extends Notifier<AsyncValue<AuthResponse?>> {
         username: username,
       );
 
-      state = AsyncValue.data(response);
       await $sl.get<TokenStorageService>().saveTokens(
         accessToken: response!.tokens!['access'],
         refreshToken: response.tokens!['refresh'],
       );
+      state = AsyncValue.data(response);
+      $sl.get<AppRouter>().replaceAll([BlogsRoute()]);
+    } catch (e, stk) {
+      state = AsyncValue.error("An unknown error occured", stk);
+    }
+  }
+
+  void logout() async {
+    try {
+      state = AsyncLoading();
+      await authService.logout();
+      await $sl.get<TokenStorageService>().clearTokens();
+      await $sl.get<AppRouter>().replaceAll([AuthRoute()]);
     } catch (e, stk) {
       state = AsyncValue.error("An unknown error occured", stk);
     }

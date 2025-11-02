@@ -1,8 +1,11 @@
 import 'package:auto_route/auto_route.dart';
+import 'package:blogspace/features/auth/notifers/auth_controller.dart';
 import 'package:blogspace/features/profile/notifers/profile_notifier.dart';
+import 'package:blogspace/shared/dialog.dart';
 import 'package:blogspace/shared/loading_screen.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:iconsax_flutter/iconsax_flutter.dart';
 
 @RoutePage()
 class ProfileScreen extends ConsumerWidget {
@@ -17,6 +20,21 @@ class ProfileScreen extends ConsumerWidget {
         title: const Text('Profile'),
         centerTitle: true,
         elevation: 0,
+        actions: [
+          IconButton(
+            onPressed: () {
+              showConfirmationDialog(
+                context: context,
+                title: "Logout",
+                content: "Do you want to logout",
+                onConfirm: () {
+                  ref.read(authNotifierProvider.notifier).logout();
+                },
+              );
+            },
+            icon: Icon(Icons.logout, color: Colors.red),
+          ),
+        ],
       ),
       body: userAsync.when(
         loading: () => LoadingWidget(),

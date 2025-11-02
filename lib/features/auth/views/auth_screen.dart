@@ -124,10 +124,7 @@ class _AuthScreenState extends ConsumerState<AuthScreen> {
         ref.invalidate(authNotifierProvider);
         return;
       }
-      if (next.value != null) {
-        context.router.replaceAll([BlogsRoute()]);
-        return;
-      }
+     
     });
 
     final isLogin = ref.watch(isLoginProvider);
