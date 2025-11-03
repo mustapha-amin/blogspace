@@ -148,6 +148,7 @@ class _AuthScreenState extends ConsumerState<AuthScreen> {
                         placeholder: const Text('Enter your username'),
                         keyboardType: TextInputType.text,
                         validator: (value) => Validator.validateUsername(value),
+                        autovalidateMode: autovalidateMode,
                       ),
                       const SizedBox(height: 16),
                     ],
@@ -171,6 +172,7 @@ class _AuthScreenState extends ConsumerState<AuthScreen> {
                       placeholder: const Text('Enter your email'),
                       keyboardType: TextInputType.emailAddress,
                       validator: (value) => Validator.validateEmail(value),
+                      autovalidateMode: autovalidateMode,
                     ),
                     const SizedBox(height: 16),
 
@@ -192,6 +194,7 @@ class _AuthScreenState extends ConsumerState<AuthScreen> {
                       controller: _passwordController,
                       placeholder: const Text('Enter your password'),
                       obscureText: passwordIsObscure,
+                      autovalidateMode: autovalidateMode,
                       validator: (value) => Validator.validatePassword(value),
                       trailing: InkWell(
                         onTap: () {
