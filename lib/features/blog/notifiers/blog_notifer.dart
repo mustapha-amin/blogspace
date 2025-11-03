@@ -1,4 +1,6 @@
 import 'dart:async';
+import 'package:blogspace/core/routes/router.dart';
+import 'package:blogspace/core/routes/router.gr.dart';
 import 'package:blogspace/core/services/sl_service.dart';
 import 'package:blogspace/features/blog/models/blog_response.dart';
 import 'package:blogspace/features/blog/services/blog_service.dart';
@@ -13,11 +15,7 @@ class BlogNotifier extends AsyncNotifier<BlogResponse> {
 
   @override
   Future<BlogResponse> build() async {
-    if (state is! AsyncData) {
-      state = const AsyncLoading();
-      return await _fetchPosts();
-    }
-    return state.value!;
+    return _fetchPosts();
   }
 
   Future<BlogResponse> _fetchPosts() async {
@@ -26,6 +24,20 @@ class BlogNotifier extends AsyncNotifier<BlogResponse> {
       return posts!;
     } catch (e) {
       throw e.toString();
+    }
+  }
+
+  Future<void> createPost({
+    required String title,
+    required String content,
+  }) async {
+    try {
+      state = AsyncLoading();
+      await _blogService.createPost(content, title);
+      $sl.get<AppRouter>().replaceAll([BlogsRoute()]);
+      ref.invalidateSelf();
+    } catch (e, stk) {
+      state = AsyncError(e.toString(), stk);
     }
   }
 

@@ -1,15 +1,11 @@
-import 'dart:developer';
 
 import 'package:auto_route/auto_route.dart';
-import 'package:blogspace/core/routes/router.gr.dart';
-import 'package:blogspace/core/services/sl_service.dart';
-import 'package:blogspace/core/services/token_storage_service.dart';
 import 'package:blogspace/features/auth/notifers/auth_controller.dart';
 import 'package:blogspace/features/auth/notifers/login_controller.dart';
-import 'package:blogspace/features/auth/models/auth_response.dart';
 import 'package:blogspace/features/auth/widgets/toggle_buttons.dart';
 import 'package:blogspace/shared/app_flushbar.dart';
 import 'package:blogspace/shared/loading_screen.dart';
+import 'package:blogspace/utils/validator.dart';
 import 'package:flutter/material.dart' hide ToggleButtons;
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:gap/gap.dart';
@@ -31,54 +27,6 @@ class _AuthScreenState extends ConsumerState<AuthScreen> {
   final _passwordController = TextEditingController();
   bool passwordIsObscure = true;
   AutovalidateMode autovalidateMode = AutovalidateMode.disabled;
-
-  String? _validateUsername(String value) {
-    if (value.isEmpty) {
-      return 'Username is required';
-    }
-    if (value.length < 3) {
-      return 'Username must be at least 3 characters';
-    }
-    if (value.length > 20) {
-      return 'Username must be less than 20 characters';
-    }
-    if (!RegExp(r'^[a-zA-Z0-9_]+$').hasMatch(value)) {
-      return 'Username can only contain letters, numbers, and underscores';
-    }
-    return null;
-  }
-
-  String? _validateEmail(String value) {
-    if (value.isEmpty) {
-      return 'Email is required';
-    }
-    final emailRegex = RegExp(
-      r'^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$',
-    );
-    if (!emailRegex.hasMatch(value)) {
-      return 'Please enter a valid email address';
-    }
-    return null;
-  }
-
-  String? _validatePassword(String value) {
-    if (value.isEmpty) {
-      return 'Password is required';
-    }
-    if (value.length < 8) {
-      return 'Password must be at least 8 characters';
-    }
-    if (!RegExp(r'[A-Z]').hasMatch(value)) {
-      return 'Password must contain at least one uppercase letter';
-    }
-    if (!RegExp(r'[a-z]').hasMatch(value)) {
-      return 'Password must contain at least one lowercase letter';
-    }
-    if (!RegExp(r'[0-9]').hasMatch(value)) {
-      return 'Password must contain at least one number';
-    }
-    return null;
-  }
 
   void _handleSubmit() async {
     // log((await $sl.get<TokenStorageService>().hasTokens()).toString());
@@ -199,7 +147,7 @@ class _AuthScreenState extends ConsumerState<AuthScreen> {
                         controller: _usernameController,
                         placeholder: const Text('Enter your username'),
                         keyboardType: TextInputType.text,
-                        validator: (value) => _validateUsername(value),
+                        validator: (value) => Validator.validateUsername(value),
                       ),
                       const SizedBox(height: 16),
                     ],
@@ -222,7 +170,7 @@ class _AuthScreenState extends ConsumerState<AuthScreen> {
                       controller: _emailController,
                       placeholder: const Text('Enter your email'),
                       keyboardType: TextInputType.emailAddress,
-                      validator: (value) => _validateEmail(value),
+                      validator: (value) => Validator.validateEmail(value),
                     ),
                     const SizedBox(height: 16),
 
@@ -244,7 +192,7 @@ class _AuthScreenState extends ConsumerState<AuthScreen> {
                       controller: _passwordController,
                       placeholder: const Text('Enter your password'),
                       obscureText: passwordIsObscure,
-                      validator: (value) => _validatePassword(value),
+                      validator: (value) => Validator.validatePassword(value),
                       trailing: InkWell(
                         onTap: () {
                           setState(() {

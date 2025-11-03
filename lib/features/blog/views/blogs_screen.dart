@@ -15,8 +15,7 @@ class BlogsScreen extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final blogsAsync =  ref
-          .watch(blogNotifierProvider);
+    final blogsAsync = ref.watch(blogNotifierProvider);
     return Scaffold(
       appBar: AppBar(
         actions: [
@@ -51,62 +50,55 @@ class BlogsScreen extends ConsumerWidget {
           ],
         ),
       ),
-      body:blogsAsync
-          .when(
-            data: (blogResponse) {
-              if (blogResponse.error != null) {
-                return Center(child: Text(blogResponse.error!));
-              }
+      body: blogsAsync.when(
+        data: (blogResponse) {
+          if (blogResponse.error != null) {
+            return Center(child: Text(blogResponse.error!));
+          }
 
-              final posts = blogResponse.posts;
-              if (posts == null || posts.isEmpty) {
-                return const Center(
-                  child: Column(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      Icon(
-                        Icons.article_outlined,
-                        size: 64,
-                        color: Colors.grey,
-                      ),
-                      SizedBox(height: 16),
-                      Text('No blog posts found'),
-                    ],
-                  ),
-                );
-              }
-
-              return RefreshIndicator(
-                onRefresh: () async{
-                  ref.invalidate(blogNotifierProvider);
-                },
-                child: ListView.builder(
-                  itemCount: posts.length,
-                  padding: const EdgeInsets.all(16),
-                  itemBuilder: (context, index) {
-                    final post = posts[index];
-                    return BlogPostCard(
-                      post: post,
-                      onTap: () {
-                        context.router.push(BlogDetailRoute(post: post));
-                      },
-                    );
-                  },
-                ),
-              );
-            },
-            loading: () => const LoadingScreen(),
-            error: (error, stackTrace) => Center(
+          final posts = blogResponse.posts;
+          if (posts == null || posts.isEmpty) {
+            return const Center(
               child: Column(
                 mainAxisSize: MainAxisSize.min,
                 children: [
-                  const Icon(Icons.error_outline, size: 64, color: Colors.red),
-                  const SizedBox(height: 16),
-                  Text('Error: $error'),
+                  Icon(Icons.article_outlined, size: 64, color: Colors.grey),
+                  SizedBox(height: 16),
+                  Text('No blog posts found'),
                 ],
               ),
+            );
+          }
+
+          return RefreshIndicator(
+            onRefresh: () => ref.refresh(blogNotifierProvider.future),
+            child: ListView.builder(
+              itemCount: posts.length,
+              padding: const EdgeInsets.all(16),
+              itemBuilder: (context, index) {
+                final post = posts[index];
+                return BlogPostCard(
+                  post: post,
+                  onTap: () {
+                    context.router.push(BlogDetailRoute(post: post));
+                  },
+                );
+              },
             ),
+          );
+        },
+        loading: () => const LoadingScreen(),
+        error: (error, stackTrace) => Center(
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              const Icon(Icons.error_outline, size: 64, color: Colors.red),
+              const SizedBox(height: 16),
+              Text('Error: $error'),
+            ],
           ),
+        ),
+      ),
       floatingActionButton: FloatingActionButton(
         onPressed: () {
           context.router.push(BlogCreationRoute());
