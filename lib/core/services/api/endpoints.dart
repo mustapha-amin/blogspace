@@ -10,7 +10,8 @@ abstract class Endpoints {
 
   static const posts = "$baseUrl/posts";
 
-  static String userById(String id) => "$baseUrl/users/$id";  
+  static String userById(String id) => "$baseUrl/users/$id"; 
+   
   static String fetchComments(String postId) => "$posts/$postId/comments";
   static String commentOnPost(String postId) => "$posts/$postId/comment";
   static String deletePost(String postId) => "$posts/$postId";
