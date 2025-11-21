@@ -28,6 +28,25 @@ class BlogService {
     }
   }
 
+  Future<BlogResponse?> fetchCurrentUserBlogPosts() async {
+    try {
+      final response = await _dio.get(Endpoints.userPosts);
+
+      return BlogResponse.fromMap(response.data as Map<String, dynamic>);
+    } on DioException catch (e) {
+      if (e.response != null) {
+        final response = BlogResponse.fromMap(
+          e.response!.data as Map<String, dynamic>,
+        );
+        throw response.error ?? 'Unknown error occurred';
+      } else {
+        throw handleDioException(e);
+      }
+    } catch (e) {
+      throw e.toString();
+    }
+  }
+
   Future<String> createPost(String content, String title) async {
     try {
       final response = await _dio.post(

@@ -1,144 +1,181 @@
 import 'dart:async';
 import 'dart:developer';
-
-import 'package:blogspace/core/routes/router.dart';
-import 'package:blogspace/core/routes/router.gr.dart';
-import 'package:blogspace/core/services/sl_service.dart';
-import 'package:blogspace/features/auth/services/auth_service.dart';
-import 'package:dio/dio.dart';
 import 'package:blogspace/core/services/token_storage_service.dart';
+import 'package:dio/dio.dart';
 import 'package:flutter/foundation.dart';
 
 class AuthInterceptor extends Interceptor {
-  final Dio _dio;
-  final TokenStorageService _tokenStorage;
-  bool _isRefreshing = false;
-  final List<Completer<void>> _refreshCompleters = [];
+  final Dio dio;
+  final TokenStorageService tokenStorage;
+  final String refreshEndpoint;
+  final VoidCallback? onTokenExpired; // Optional logout callback
 
-  AuthInterceptor(this._dio, this._tokenStorage);
+  // To avoid multiple refresh calls simultaneously
+  Completer<void>? _refreshCompleter;
+  bool _isRefreshing = false;
+
+  AuthInterceptor({
+    required this.dio,
+    required this.tokenStorage,
+    required this.refreshEndpoint,
+    required this.onTokenExpired,
+  });
 
   @override
   void onRequest(
     RequestOptions options,
     RequestInterceptorHandler handler,
   ) async {
-    // Skip token for refresh token requests
-    if (options.path.contains('refresh')) {
+    // Skip token for refresh and login requests
+    if (options.path.contains('refresh') ||
+        options.path.contains('login') ||
+        options.path.contains('register')) {
       return handler.next(options);
     }
 
-    final token = await _tokenStorage.getAccessToken();
+    final token = await tokenStorage.getAccessToken();
     if (token != null && token.isNotEmpty) {
       options.headers['Authorization'] = 'Bearer $token';
     }
 
-    log('➡️ [REQUEST] ${options.method} ${options.data} ${options.uri}');
+    log('➡️ [REQUEST] ${options.method} ${options.uri}');
+    if (kDebugMode && options.data != null) {
+      log('   Data: ${options.data}');
+    }
+    log(options.headers.toString());
     handler.next(options);
   }
 
   @override
   void onResponse(Response response, ResponseInterceptorHandler handler) {
     log(
-      "✅ [RESPONSE] ${response.statusCode} ${response.requestOptions.uri}${kDebugMode ? response.data.toString() : "Data fetched"}",
+      "✅ [RESPONSE] ${response.statusCode} ${response.requestOptions.uri}${kDebugMode ? '\n   Data: ${response.data}' : ''}",
     );
     handler.next(response);
   }
 
   @override
   void onError(DioException err, ErrorInterceptorHandler handler) async {
-    if (err.response?.data == null) {
-      log('❌ [ERROR] Network error or server unreachable');
-      return handler.next(err);
+    final statusCode = err.response?.statusCode;
+    final requestOptions = err.requestOptions;
+
+    log('❌ [ERROR] ${statusCode ?? "No status"} ${requestOptions.uri}');
+    if (kDebugMode) {
+      log('   ${err.response?.data ?? err.message}');
     }
 
-    log(
-      '❌ [ERROR] ${err.response?.statusCode} ${err.requestOptions.uri} ${err.response!.data.toString()}',
-    );
-
-    if (err.response?.statusCode == 401) {
-      final options = err.requestOptions;
-
-      if (options.path.endsWith('/refresh')) {
-        _handleLogout();
-        return handler.next(err);
-      }
-
+    // Only try refresh for 401 Unauthorized on non-auth endpoints
+    if (statusCode == 401 &&
+        !requestOptions.path.contains('refresh') &&
+        !requestOptions.path.contains('login')) {
       try {
-        await _handleTokenRefresh();
+        // If another refresh is ongoing, wait for it
+        if (_isRefreshing && _refreshCompleter != null) {
+          log('⏳ [WAITING] Another token refresh in progress...');
+          await _refreshCompleter!.future;
+        } else {
+          // Start a new refresh
+          _isRefreshing = true;
+          _refreshCompleter = Completer<void>();
 
-        final response = await _retryRequest(options);
-        return handler.resolve(response);
-      } catch (e) {
-        log('❌ [ERROR] Failed to refresh token or retry request: $e');
-        _handleLogout();
+          await _refreshToken();
+
+          _refreshCompleter!.complete();
+          _isRefreshing = false;
+        }
+
+        // Retry the original request with new token
+        final newToken = await tokenStorage.getAccessToken();
+        if (newToken != null && newToken.isNotEmpty) {
+          requestOptions.headers['Authorization'] = 'Bearer $newToken';
+
+          log(
+            '🔁 [RETRY] Retrying request with new token: ${requestOptions.uri}',
+          );
+
+          final clonedRequest = await dio.fetch(requestOptions);
+          return handler.resolve(clonedRequest);
+        } else {
+          throw Exception('No access token available after refresh');
+        }
+      } on DioException catch (e) {
+        log('❌ [TOKEN REFRESH FAILED] DioException: ${e.message}');
+        _isRefreshing = false;
+        _refreshCompleter?.completeError(e);
+        _refreshCompleter = null;
+
+        // If refresh fails, logout the user
+        onTokenExpired?.call();
+
+        return handler.next(err);
+      } catch (e, s) {
+        log('❌ [TOKEN REFRESH FAILED] $e\n$s');
+        _isRefreshing = false;
+        _refreshCompleter?.completeError(e);
+        _refreshCompleter = null;
+
+        // If refresh fails, logout the user
+        onTokenExpired?.call();
+
         return handler.next(err);
       }
     }
 
-    return handler.next(err);
+    handler.next(err);
   }
 
-  Future<void> _handleTokenRefresh() async {
-    if (_isRefreshing) {
-      final completer = Completer<void>();
-      _refreshCompleters.add(completer);
-      return completer.future;
-    }
+  Future<void> _refreshToken() async {
+    log('🔄 [REFRESHING TOKEN]');
 
-    _isRefreshing = true;
+    final refreshToken = await tokenStorage.getRefreshToken();
+    if (refreshToken == null || refreshToken.isEmpty) {
+      throw Exception('No refresh token available');
+    }
 
     try {
-      final refreshed = await $sl.get<AuthService>().refreshTokens();
-      
-      if (!refreshed) {
-        throw Exception('Token refresh failed');
-      }
+      // Create a separate Dio instance for refresh to avoid interceptor loops
+      final refreshDio = Dio(dio.options);
 
-      for (final completer in _refreshCompleters) {
-        if (!completer.isCompleted) {
-          completer.complete();
+      final response = await refreshDio.post(
+        refreshEndpoint,
+        data: {'refreshToken': refreshToken},
+        options: Options(
+          headers: {'Authorization': 'Bearer $refreshToken'},
+          // Don't follow redirects during refresh
+          followRedirects: false,
+          validateStatus: (status) => status != null && status < 500,
+        ),
+      );
+
+      if (response.statusCode == 200 || response.statusCode == 201) {
+        final data = response.data;
+
+        // Handle different response formats
+        final newAccessToken =
+            data['accessToken'] ?? data['access_token'] ?? data['token'];
+        final newRefreshToken =
+            data['refreshToken'] ?? data['refresh_token'] ?? refreshToken;
+
+        if (newAccessToken == null || newRefreshToken == null) {
+          throw Exception('No access token in refresh response');
         }
+
+        await tokenStorage.saveTokens(
+          accessToken: newAccessToken,
+          refreshToken: newRefreshToken,
+        );
+        log('✅ [TOKEN REFRESHED SUCCESSFULLY]');
+      } else {
+        throw Exception(
+          'Refresh token request failed with status: ${response.statusCode}',
+        );
       }
-      _refreshCompleters.clear();
-    } catch (e) {
-      for (final completer in _refreshCompleters) {
-        if (!completer.isCompleted) {
-          completer.completeError(e);
-        }
+    } on DioException catch (e) {
+      if (e.response?.statusCode == 401 || e.response?.statusCode == 403) {
+        await tokenStorage.clearTokens();
+        throw Exception('Refresh token expired or invalid');
       }
-      _refreshCompleters.clear();
       rethrow;
-    } finally {
-      _isRefreshing = false;
     }
-  }
-
-  Future<Response<dynamic>> _retryRequest(RequestOptions requestOptions) async {
-    final token = await _tokenStorage.getAccessToken();
-
-    final options = Options(
-      method: requestOptions.method,
-      headers: {...requestOptions.headers, 'Authorization': 'Bearer $token'},
-    );
-
-    return _dio.request<dynamic>(
-      requestOptions.path,
-      data: requestOptions.data,
-      queryParameters: requestOptions.queryParameters,
-      options: options,
-    );
-  }
-
-  void _handleLogout() {
-    for (final completer in _refreshCompleters) {
-      if (!completer.isCompleted) {
-        completer.completeError(Exception('Session expired'));
-      }
-    }
-    _refreshCompleters.clear();
-    _isRefreshing = false;
-
-    $sl.get<TokenStorageService>().clearTokens();
-    $sl.get<AppRouter>().replaceAll([AuthRoute()]);
   }
 }

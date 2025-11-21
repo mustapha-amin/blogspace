@@ -1,5 +1,6 @@
 import 'package:auto_route/auto_route.dart';
 import 'package:blogspace/features/auth/notifers/auth_controller.dart';
+import 'package:blogspace/features/blog/widgets/blog_post_card.dart';
 import 'package:blogspace/features/profile/notifers/profile_notifier.dart';
 import 'package:blogspace/shared/dialog.dart';
 import 'package:blogspace/shared/loading_screen.dart';
@@ -72,6 +73,25 @@ class ProfileScreen extends ConsumerWidget {
                     ).textTheme.bodyMedium?.copyWith(color: Colors.grey[700]),
                   ),
                   const SizedBox(height: 32),
+                  ref
+                      .watch(fetchUserPostsProvider)
+                      .when(
+                        data: (bPosts) {
+                          return Column(
+                            children: [
+                              ...bPosts!.posts!.map((post) {
+                                return BlogPostCard(post: post);
+                              }),
+                            ],
+                          );
+                        },
+                        error: (error, _) {
+                          return Center(child: Text(error.toString()));
+                        },
+                        loading: () {
+                          return Center(child: CircularProgressIndicator());
+                        },
+                      ),
                 ],
               ),
             ),

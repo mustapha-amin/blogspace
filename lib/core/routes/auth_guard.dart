@@ -12,7 +12,7 @@ class AuthGuard extends AutoRouteGuard {
     if (hasToken) {
       resolver.next();
     } else {
-      router.push(const AuthRoute());
+      router.replaceAll([AuthRoute()]);
     }
   }
 }

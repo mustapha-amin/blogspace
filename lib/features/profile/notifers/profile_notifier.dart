@@ -1,6 +1,7 @@
 import 'dart:developer';
 
 import 'package:blogspace/core/services/sl_service.dart';
+import 'package:blogspace/features/blog/services/blog_service.dart';
 import 'package:blogspace/features/profile/models/user.dart';
 import 'package:blogspace/features/profile/service/profile_service.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -28,3 +29,7 @@ class ProfileNotifier extends AsyncNotifier<User> {
   //   }
   // }
 }
+
+final fetchUserPostsProvider = FutureProvider.autoDispose((ref) async {
+  return $sl.get<BlogService>().fetchCurrentUserBlogPosts();
+});

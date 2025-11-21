@@ -9,6 +9,7 @@ abstract class Endpoints {
   static const refresh = "$auth/refresh";
 
   static const posts = "$baseUrl/posts";
+  static const userPosts = "$baseUrl/posts/me";
 
   static String userById(String id) => "$baseUrl/users/$id"; 
    

@@ -1,3 +1,4 @@
+import 'package:blogspace/core/routes/router.gr.dart';
 import 'package:blogspace/core/services/api/endpoints.dart';
 import 'package:blogspace/core/routes/router.dart';
 import 'package:blogspace/core/services/api/auth_intercptor.dart';
@@ -33,7 +34,14 @@ Future<void> setupServices() async {
         ),
       );
       dio.interceptors.add(
-        AuthInterceptor(dio, $sl.get<TokenStorageService>()),
+        AuthInterceptor(
+          dio: dio,
+          tokenStorage: $sl.get<TokenStorageService>(),
+          refreshEndpoint: Endpoints.refresh,
+          onTokenExpired: () {
+            $sl.get<AppRouter>().replaceAll([AuthRoute()]);
+          },
+        ),
       );
       return dio;
     })
