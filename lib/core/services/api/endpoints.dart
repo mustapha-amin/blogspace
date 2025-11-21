@@ -9,11 +9,11 @@ abstract class Endpoints {
   static const refresh = "$auth/refresh";
 
   static const posts = "$baseUrl/posts";
-  static const userPosts = "$baseUrl/posts/me";
+  static const userPosts = "$posts/me";
 
   static String userById(String id) => "$baseUrl/users/$id"; 
    
-  static String fetchComments(String postId) => "$posts/$postId/comments";
+  static String fetchComments(String postId) => "$posts/$postId/comment";
   static String commentOnPost(String postId) => "$posts/$postId/comment";
   static String deletePost(String postId) => "$posts/$postId";
 }

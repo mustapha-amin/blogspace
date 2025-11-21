@@ -151,10 +151,8 @@ class AuthInterceptor extends Interceptor {
         final data = response.data;
 
         // Handle different response formats
-        final newAccessToken =
-            data['accessToken'] ?? data['access_token'] ?? data['token'];
-        final newRefreshToken =
-            data['refreshToken'] ?? data['refresh_token'] ?? refreshToken;
+        final newAccessToken = data['access'];
+        final newRefreshToken = data['refresh'];
 
         if (newAccessToken == null || newRefreshToken == null) {
           throw Exception('No access token in refresh response');
